@@ -1,0 +1,366 @@
+\<!DOCTYPE html>
+<html>
+<head>
+    <title>Smart Bus Stop</title>
+
+    <style>
+        body {
+            margin: 0;
+            background: linear-gradient(135deg, #07111f, #102a43);
+            color: white;
+            font-family: Arial, sans-serif;
+            text-align: center;
+            padding: 30px;
+        }
+
+        h1 {
+            font-size: 42px;
+            color: #00e5ff;
+            margin-bottom: 10px;
+        }
+
+        .time {
+            font-size: 25px;
+            margin-bottom: 30px;
+        }
+
+        /* Current Bus */
+        .current {
+            background: #12395b;
+            border: 3px solid #00e5ff;
+            padding: 25px;
+            margin: auto;
+            width: 70%;
+            border-radius: 20px;
+            box-shadow: 0 0 20px #00e5ff;
+        }
+
+        .current h2 {
+            color: #ffd740;
+            font-size: 28px;
+        }
+
+        .bus {
+            font-size: 38px;
+            font-weight: bold;
+            margin: 15px;
+        }
+
+        .eta {
+            font-size: 45px;
+            font-weight: bold;
+            color: #00ff88;
+        }
+
+        /* Next Buses */
+        .next {
+            margin-top: 35px;
+        }
+
+        .next h2 {
+            color: #ffd740;
+            font-size: 30px;
+        }
+
+        .nextBus {
+            background: #1b496e;
+            margin: 15px auto;
+            padding: 18px;
+            width: 65%;
+            border-radius: 15px;
+            font-size: 24px;
+
+            display: flex;
+            justify-content: space-between;
+            align-items: center;
+
+            border-left: 6px solid #ff9800;
+        }
+
+        .nextTime {
+            color: #00ff88;
+            font-weight: bold;
+        }
+
+        .arrived {
+            color: #00ff88;
+            font-size: 45px;
+            font-weight: bold;
+        }
+    </style>
+</head>
+
+
+<body>
+
+    <h1>🚌 SMART BUS STOP</h1>
+
+    <div class="time" id="clock"></div>
+
+
+    <!-- CURRENT BUS -->
+
+    <div class="current">
+
+        <h2>🚌 NOW APPROACHING</h2>
+
+        <div class="bus" id="currentBus">
+            Bus 12A → TOWN
+        </div>
+
+        <div class="eta" id="currentETA">
+            30 sec
+        </div>
+
+    </div>
+
+
+    <!-- NEXT BUSES -->
+
+    <div class="next">
+
+        <h2>🚌 NEXT AVAILABLE BUSES</h2>
+
+        <div id="nextBuses"></div>
+
+    </div>
+
+
+<script>
+
+    // ====================================
+    // BUS DATA
+    // ====================================
+
+    let buses = [
+
+        {
+            number: "12A",
+            destination: "TOWN",
+            time: 30
+        },
+
+        {
+            number: "27",
+            destination: "MARKET",
+            time: 120
+        },
+
+        {
+            number: "34",
+            destination: "COLLEGE",
+            time: 300
+        },
+
+        {
+            number: "41",
+            destination: "VILLAGE",
+            time: 480
+        }
+
+    ];
+
+
+    // ====================================
+    // CLOCK
+    // ====================================
+
+    function updateClock() {
+
+        let now = new Date();
+
+        document.getElementById("clock").innerHTML =
+            "🕐 " + now.toLocaleTimeString();
+
+    }
+
+
+    setInterval(updateClock, 1000);
+
+    updateClock();
+
+
+    // ====================================
+    // CONVERT SECONDS TO MINUTES
+    // ====================================
+
+    function formatTime(seconds) {
+
+        let minutes = Math.floor(seconds / 60);
+
+        let remainingSeconds = seconds % 60;
+
+
+        if (minutes > 0) {
+
+            return minutes + " min " +
+                   remainingSeconds + " sec";
+
+        } else {
+
+            return remainingSeconds + " sec";
+
+        }
+
+    }
+
+
+    // ====================================
+    // DISPLAY NEXT BUSES
+    // ====================================
+
+    function displayNextBuses() {
+
+        let container =
+            document.getElementById("nextBuses");
+
+
+        container.innerHTML = "";
+
+
+        for (let i = 1; i < buses.length; i++) {
+
+            let bus = buses[i];
+
+
+            let div = document.createElement("div");
+
+            div.className = "nextBus";
+
+
+            div.innerHTML =
+
+                "<span>🚌 " +
+                bus.number +
+                " → " +
+                bus.destination +
+                "</span>" +
+
+                "<span class='nextTime'>" +
+                formatTime(bus.time) +
+                "</span>";
+
+
+            container.appendChild(div);
+
+        }
+
+    }
+
+
+    // ====================================
+    // UPDATE BUS INFORMATION
+    // ====================================
+
+    function updateBus() {
+
+        let currentBus =
+            document.getElementById("currentBus");
+
+        let currentETA =
+            document.getElementById("currentETA");
+
+
+        // Current bus
+
+        if (buses.length > 0) {
+
+            currentBus.innerHTML =
+                "Bus " +
+                buses[0].number +
+                " → " +
+                buses[0].destination;
+
+
+            if (buses[0].time > 0) {
+
+                currentETA.innerHTML =
+                    formatTime(buses[0].time);
+
+            }
+
+        }
+
+
+        // Reduce time for every bus
+
+        for (let i = 0; i < buses.length; i++) {
+
+            if (buses[i].time > 0) {
+
+                buses[i].time--;
+
+            }
+
+        }
+
+
+        // ====================================
+        // BUS ARRIVED
+        // ====================================
+
+        if (buses.length > 0 &&
+            buses[0].time <= 0) {
+
+
+            currentETA.innerHTML =
+                "🚌 BUS ARRIVED";
+
+
+            // Wait 2 seconds then next bus
+
+            setTimeout(function() {
+
+                buses.shift();
+
+                if (buses.length > 0) {
+
+                    // Make next bus the current bus
+
+                    currentBus.innerHTML =
+                        "Bus " +
+                        buses[0].number +
+                        " → " +
+                        buses[0].destination;
+
+
+                    currentETA.innerHTML =
+                        formatTime(buses[0].time);
+
+                }
+
+                else {
+
+                    currentBus.innerHTML =
+                        "NO BUSES AVAILABLE";
+
+                    currentETA.innerHTML =
+                        "Please wait";
+
+                }
+
+                displayNextBuses();
+
+            }, 2000);
+
+        }
+
+
+        displayNextBuses();
+
+    }
+
+
+    // Start
+
+    displayNextBuses();
+
+
+    // Update every second
+
+    setInterval(updateBus, 1000);
+
+</script>
+
+</body>
+</html>
